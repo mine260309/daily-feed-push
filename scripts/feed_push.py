@@ -16,6 +16,10 @@ RECIPE_FILE = CONFIG_DIR + 'recipes.txt'
 RECIPIENTS_FILE = CONFIG_DIR + 'recipients.txt'
 PROCESS_SCRIPT = CUR_DIR + '/process_recipe.sh'
 
+def prepare_mobi_dir():
+  if not os.path.exists(MOBI_DIR):
+    os.mkdir(MOBI_DIR)
+
 def get_path(recipe):
     recipe_path = CONFIG_DIR + recipe
     mobi = (os.path.splitext(os.path.basename(recipe))[0])
@@ -28,6 +32,7 @@ def process_recipe(recipe):
      Check if mobi exists, create one if not
      Returns the mobi file name
   """
+  prepare_mobi_dir()
   logger.debug('Recipe: %s' %recipe)
   [recipe, mobi] = get_path(recipe)
   logger.debug(mobi)
@@ -48,9 +53,10 @@ if __name__ == '__main__':
   for recipe in recipes:
     if recipe:
       try:
+        logger.info('Processing recipe %s' % recipe)
         attachment = process_recipe(recipe)
+        logger.info('%s genereated successfully' % attachment)
         subject = 'Daily feed push: %s' % os.path.basename(attachment)
-        logger.info('Subject: %s' %subject)
         sendmail(recipients, subject, attachment)
       except:
         logger.error('Unexpected error: %s', str(sys.exc_info()))

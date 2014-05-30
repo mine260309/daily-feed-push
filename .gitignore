@@ -55,5 +55,6 @@ docs/_build/
 # Generated mobi files
 mobi/*.mobi
 
-# Gedit backup files
+# Other files
 *~
+logs/*

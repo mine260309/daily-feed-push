@@ -8,10 +8,10 @@ from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 
-#import log
+import log
 
 
-#logger = log.setup_custom_logger('root')
+logger = log.setup_custom_logger('sendmail')
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_FILE = '%s/../config/mail.conf' % CUR_DIR
 
@@ -44,22 +44,27 @@ def sendmail(recipients, subject, attachment):
   msg.set_payload(fp.read())
   fp.close()
   
-  #Encode the payload using Base64
+  # Encode the payload using Base64
   encoders.encode_base64(msg)
   msg.add_header('Content-Disposition', 'attachment', filename=attachment)
   outer.attach(msg)
   composed = outer.as_string()
 
-  if mailconfig['port']:
-    #logger.debug('SMTP server: %s:%s', mailconfig['smtp'], mailconfig['port'])
-    server = smtplib.SMTP(mailconfig['smtp'], int(mailconfig['port']))
-  else:
-    #logger.debug('SMTP server: %s', mailconfig['smtp'])
-    server = smtplib.SMTP(mailconfig['smtp'])
-  server.ehlo()
-  server.starttls()
-  server.ehlo()
-  server.login(mail_from, mailconfig['password'])
-
-  server.sendmail(mail_from, recipients, composed)
+  logger.debug('Sending mail to %s ...' % str(recipients))
+  try:
+    if mailconfig['port']:
+      logger.debug('SMTP server: %s:%s', mailconfig['smtp'], mailconfig['port'])
+      server = smtplib.SMTP(mailconfig['smtp'], int(mailconfig['port']))
+    else:
+      logger.debug('SMTP server: %s', mailconfig['smtp'])
+      server = smtplib.SMTP(mailconfig['smtp'])
+    server.ehlo()
+    server.starttls()
+    server.ehlo()
+    server.login(mail_from, mailconfig['password'])
+    server.sendmail(mail_from, recipients, composed)
+  except:
+    logger.error('Failed to send mail')
+    raise
+  logger.info('Sent successfully')
   server.quit()
