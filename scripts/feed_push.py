@@ -38,7 +38,12 @@ if __name__ == '__main__':
             logger.info('Processing recipe %s' % recipe)
             attachment = process_recipe(recipe)
             logger.info('%s genereated successfully' % attachment)
-            subject = 'Daily feed push: %s' % os.path.basename(attachment)
-            sendmail(recipients, subject, attachment)
+            name = os.path.basename(attachment)
+            if (utils.is_mobi_sent(attachment)):
+                logger.info('%s already sent' % name)
+            else:
+                subject = 'Daily feed push: %s' % name
+                sendmail(recipients, subject, attachment)
+                utils.mark_mobi_sent(attachment)
         except:
             logger.error('Unexpected error: %s', str(sys.exc_info()))

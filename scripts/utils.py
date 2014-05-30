@@ -41,3 +41,12 @@ def get_recipients():
 
 def get_process_script():
     return PROCESS_SCRIPT
+
+def get_sent_mark_file(mobi):
+    return mobi + '.sent'
+
+def mark_mobi_sent(mobi):
+    open(get_sent_mark_file(mobi), 'a').close()
+
+def is_mobi_sent(mobi):
+    return os.path.exists(get_sent_mark_file(mobi))

@@ -53,7 +53,7 @@ coverage.xml
 docs/_build/
 
 # Generated mobi files
-mobi/*.mobi
+mobi/*
 
 # Other files
 *~
