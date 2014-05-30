@@ -1,6 +1,7 @@
 #! /usr/bin/env python
 from sendmail import sendmail
 
+## This file is for manual test only
 def send_command(recipients, subject, attachment):
     """Send email to recipients with subject and an attachment"""
     print 'Attachment: %s' %attachment

@@ -2,63 +2,43 @@
 import subprocess
 import sys
 import os.path
-from datetime import datetime
 
 import log
+import utils
 from sendmail import sendmail
 
 
 logger = log.setup_custom_logger('root')
-CUR_DIR = os.path.dirname(os.path.realpath(__file__))
-CONFIG_DIR = '%s/../config/' % CUR_DIR
-MOBI_DIR = '%s/../mobi/' % CUR_DIR
-RECIPE_FILE = CONFIG_DIR + 'recipes.txt'
-RECIPIENTS_FILE = CONFIG_DIR + 'recipients.txt'
-PROCESS_SCRIPT = CUR_DIR + '/process_recipe.sh'
-
-def prepare_mobi_dir():
-  if not os.path.exists(MOBI_DIR):
-    os.mkdir(MOBI_DIR)
-
-def get_path(recipe):
-    recipe_path = CONFIG_DIR + recipe
-    mobi = (os.path.splitext(os.path.basename(recipe))[0])
-    mobi = '%s_%s.mobi' %(mobi, datetime.now().strftime("%Y-%m-%d"))
-    mobi_path = MOBI_DIR + mobi
-    return [recipe_path, mobi_path]
-
 def process_recipe(recipe):
-  """Process a single recipe
-     Check if mobi exists, create one if not
-     Returns the mobi file name
-  """
-  prepare_mobi_dir()
-  logger.debug('Recipe: %s' %recipe)
-  [recipe, mobi] = get_path(recipe)
-  logger.debug(mobi)
-  if os.path.isfile(mobi):
-    logger.info("mobi already exists")
-  else:
-    subprocess.call([PROCESS_SCRIPT, recipe, mobi])
-  return mobi
+    """Process a single recipe
+       Check if mobi exists, create one if not
+       Returns the mobi file name
+    """
+    utils.prepare_mobi_dir()
+    logger.debug('Recipe: %s' %recipe)
+    [recipe, mobi] = utils.get_recipe_mobi_path(recipe)
+    logger.debug(mobi)
+    if os.path.isfile(mobi):
+        logger.info("mobi already exists")
+    else:
+        ret = subprocess.call([utils.get_process_script(), recipe, mobi])
+        if ret != 0:
+            raise RuntimeError("process fails for recipe " + recipe)
+    return mobi
 
 if __name__ == '__main__':
-  logger.debug('main')
-  recipes = [line.strip() for line in open(RECIPE_FILE)]
-  recipients = [line.strip() for line in open(RECIPIENTS_FILE)]
-  
-  logger.debug('Recipes: %s' %str(recipes))
-  logger.debug('Recipients: %s' %str(recipients))
-  
-  for recipe in recipes:
-    if recipe:
-      try:
-        logger.info('Processing recipe %s' % recipe)
-        attachment = process_recipe(recipe)
-        logger.info('%s genereated successfully' % attachment)
-        subject = 'Daily feed push: %s' % os.path.basename(attachment)
-        sendmail(recipients, subject, attachment)
-      except:
-        logger.error('Unexpected error: %s', str(sys.exc_info()))
-    else:
-      logger.debug("Ignore empty line")
+    logger.debug('main')
+    recipes = utils.get_recipes()
+    logger.debug('Recipes: %s' %str(recipes))
+    recipients = utils.get_recipients()
+    logger.debug('Recipients: %s' %str(recipients))
+
+    for recipe in recipes:
+        try:
+            logger.info('Processing recipe %s' % recipe)
+            attachment = process_recipe(recipe)
+            logger.info('%s genereated successfully' % attachment)
+            subject = 'Daily feed push: %s' % os.path.basename(attachment)
+            sendmail(recipients, subject, attachment)
+        except:
+            logger.error('Unexpected error: %s', str(sys.exc_info()))
