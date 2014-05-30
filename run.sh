@@ -1,3 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
-scripts/feed_push.py
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+$DIR/scripts/feed_push.py
