@@ -1,6 +1,8 @@
 import os.path
 from datetime import datetime
 
+MAX_RECIPIENTS = 10
+
 # Various helper functions
 CUR_DIR = os.path.dirname(os.path.realpath(__file__))
 CONFIG_DIR = '%s/../config/' % CUR_DIR
@@ -50,3 +52,19 @@ def mark_mobi_sent(mobi):
 
 def is_mobi_sent(mobi):
     return os.path.exists(get_sent_mark_file(mobi))
+
+def add_recipient(mail):
+    """
+      Add a email address into recipients file with limited lines
+    """
+    import tempfile
+    recipients = set(get_recipients())
+    recipients.add(mail)
+    if len(recipients) <= MAX_RECIPIENTS:
+        with tempfile.NamedTemporaryFile('w', dir=os.path.dirname(RECIPIENTS_FILE), delete=False) as tf:
+            for item in list(recipients):
+                tf.write("%s\n" % item)
+            tempname = tf.name
+            os.rename(tempname, RECIPIENTS_FILE)
+    else:
+        raise Exception('Max recipients limit reached!')

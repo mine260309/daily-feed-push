@@ -15,7 +15,13 @@ Calibre
 
 Usage
 -----
-./run.sh
+* Manully convert feed to mobi and send email
+
+```./run.sh```
+
+* Setup crontab
+
+```./set_crontab.sh  # Modify this file to set the when and how often the cronjob should run```
 
 
 Configs
