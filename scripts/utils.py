@@ -1,5 +1,6 @@
 import os.path
 from datetime import datetime
+from collections import OrderedDict
 
 MAX_RECIPIENTS = 10
 
@@ -58,8 +59,10 @@ def add_recipient(mail):
       Add a email address into recipients file with limited lines
     """
     import tempfile
-    recipients = set(get_recipients())
-    recipients.add(mail)
+    recipients = get_recipients()
+    recipients.append(mail)
+    recipients = list(OrderedDict.fromkeys(recipients))
+
     if len(recipients) <= MAX_RECIPIENTS:
         with tempfile.NamedTemporaryFile('w', dir=os.path.dirname(RECIPIENTS_FILE), delete=False) as tf:
             for item in list(recipients):

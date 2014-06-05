@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+<title>Subscriptions of daily-feed-push</title>
 <script>
 window.addEventListener("load", function () {
   // We need to access the form element
@@ -13,12 +14,17 @@ window.addEventListener("load", function () {
   });
   
   var xmlhttp;
-  function sendXHR(url, data, func)
+  function sendXHR(method, url, data, func)
   {
     xmlhttp = new XMLHttpRequest();
     xmlhttp.onreadystatechange=func;
-    xmlhttp.open("POST", url);
-    xmlhttp.send(data);
+    xmlhttp.open(method, url);
+    if (method == "POST") {
+      xmlhttp.send(data);
+    }
+    else {
+      xmlhttp.send();
+    }
   }
 
   function subscribe()
@@ -26,9 +32,10 @@ window.addEventListener("load", function () {
     // We bind the FormData object and the form element
     var formData  = new FormData(form);
 
-    sendXHR("api/1/subscribe", formData, function() {
+    sendXHR("POST", "api/1/subscribe", formData, function() {
       if (xmlhttp.readyState==4 && xmlhttp.status==200) {
         document.getElementById("result").innerHTML=xmlhttp.responseText;
+        setTimeout(getSubscriptions, 0);
       }
       else {
         document.getElementById("result").innerHTML="Something went wrong:<br>"
@@ -36,6 +43,22 @@ window.addEventListener("load", function () {
       }
     });
   }
+
+  function getSubscriptions()
+  {
+    sendXHR("GET", "api/1/subscriptions", null, function() {
+      if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+        document.getElementById("current").innerHTML = "Current subscriptions:<br>"
+        document.getElementById("current").innerHTML+=xmlhttp.responseText;
+      }
+      else {
+        document.getElementById("current").innerHTML="Unable to get subscriptions:<br>"
+        document.getElementById("current").innerHTML+=xmlhttp.responseText;
+      }
+    });
+  }
+
+  getSubscriptions();
 });
 
 </script>
@@ -49,6 +72,10 @@ window.addEventListener("load", function () {
   <input type="submit" value="Subscribe"/>
 </form>
 <div id="result"></div>
+<hr>
+<div id="current">
+Current subscriptions:<br>
+</div>
 </body>
 </html>
 
