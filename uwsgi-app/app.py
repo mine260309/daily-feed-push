@@ -1,16 +1,16 @@
 # app.py
-# Tested with 'uwsgi --socket /tmp/mysite.sock --wsgi-file uwsgi-app/app.py --chmod-socket=666'
+# Tested with 'uwsgi --socket /tmp/daily-feed-push.sock --wsgi-file uwsgi-app/app.py --chmod-socket=666'
 
 from paste import request
-
+from validate_email import validate_email
 
 def application(env, start_response):
-    if (env['REQUEST_METHOD'] == 'GET'):
+    if (env['REQUEST_METHOD'] == 'POST'):
         fields = request.parse_formvars(env)
         email = None
-        if 'mail' in fields:
-            email = fields['mail']
-        if (email and len(fields) == 1):
+        if fields.has_key('mail'):
+            email = fields.get('mail')
+        if (email and len(fields) == 1 and validate_email(email)):
             try:
                 subscribe(email)
                 start_response('200 OK', [('Content-Type','text/html')])
@@ -20,7 +20,7 @@ def application(env, start_response):
                 return ["Unable to subscribe %s: %s" % (email, str(e))]
         else:
             start_response('400 Bad Request', [('Content-Type','text/html')])
-            return ['Invalid request.']
+            return ['Invalid parameters.']
     else:
         start_response('400 Bad Request', [('Content-Type','text/html')])
         return ['Invalid request.']

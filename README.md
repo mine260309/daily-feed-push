@@ -1,36 +1,47 @@
-Daily Feed Push
-===============
+#Daily Feed Push
 
 Convert feed to mobi and push to your email/kindle daily.
 
 
-Requirements
-------------
-Bash
+##Requirements
 
-Python
+##### Requirements for basic usage
 
-Calibre
+- Bash
+- Python
+- Calibre
 
+##### Requirements for webapp for subscriptions
 
-Usage
------
+- nginx
+- python-paste
+- uwsgi
+- validate-email
+
+##Usage
+
 * Manully convert feed to mobi and send email
 
-```./run.sh```
+    ```
+    ./run.sh
+    ```
 
 * Setup crontab
 
-```./set_crontab.sh  # Modify this file to set the when and how often the cronjob should run```
+    ```
+    ./set_crontab.sh  # Modify this file to set the when and how often the cronjob should run
+    ```
 
+* Setup webapp for subscriptions
 
-Configs
--------
-mail.conf: SMTP server config
+    1. Setup nginx server, refer to `uwsgi-app/nginx.conf` for sample config;
+    2. Start uwsgi backend: ```uwsgi --socket /tmp/daily-feed-push.sock --wsgi-file uwsgi-app/app.py [--chmod-socket=666]```
+    3. To manually add/delete subscriptions, just edit `config/recipients.txt`
 
-recipes.txt: List of calibre recipes
+##Configs
 
-recipients.txt: Email recipients
-
-.recipe files: Calibre recipes
+- mail.conf: SMTP server config
+- recipes.txt: List of calibre recipes
+- recipients.txt: Email recipients
+- .recipe files: Calibre recipes
 
