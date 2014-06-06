@@ -68,6 +68,7 @@ def add_recipient(mail):
             for item in list(recipients):
                 tf.write("%s\n" % item)
             tempname = tf.name
-            os.rename(tempname, RECIPIENTS_FILE)
+        os.rename(tempname, RECIPIENTS_FILE)
+        os.chmod(RECIPIENTS_FILE, 0666)
     else:
         raise Exception('Max recipients limit reached!')

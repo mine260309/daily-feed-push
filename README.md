@@ -35,7 +35,14 @@ Convert feed to mobi and push to your email/kindle daily.
 * Setup webapp for subscriptions
 
     1. Setup nginx server, refer to `uwsgi-app/nginx.conf` for sample config;
-    2. Start uwsgi backend: ```uwsgi --socket /tmp/daily-feed-push.sock --wsgi-file uwsgi-app/app.py [--chmod-socket=666]```
+    2. Start uwsgi backend manully:
+
+        ```uwsgi --socket /tmp/daily-feed-push.sock --wsgi-file uwsgi-app/app.py --chmod-socket=666```
+
+     or
+
+        ```uwsgi uwsgi-app/uwsgi.ini```
+
     3. To manually add/delete subscriptions, just edit `config/recipients.txt`
 
 ##Configs
