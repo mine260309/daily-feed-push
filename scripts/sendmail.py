@@ -1,5 +1,6 @@
 # Import smtplib for the actual sending function
 import smtplib
+import os
 
 # Import the email modules we'll need
 from email import encoders
@@ -33,7 +34,7 @@ def sendmail(recipients, subject, attachment):
 
     # Encode the payload using Base64
     encoders.encode_base64(msg)
-    msg.add_header('Content-Disposition', 'attachment', filename=attachment)
+    msg.add_header('Content-Disposition', 'attachment', filename=os.path.basename(attachment))
     outer.attach(msg)
     composed = outer.as_string()
 

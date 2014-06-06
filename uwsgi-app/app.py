@@ -3,19 +3,23 @@
 
 from paste import request
 from validate_email import validate_email
+from scripts import utils, log
 
 import re
 hide_email_regex = re.compile(r'(^.*?)(.{1,4})(@.*)')
 
+logger = log.setup_custom_logger('webapp')
 def application(env, start_response):
     #print env
     if (env['REQUEST_URI'] == '/api/1/subscriptions' and env['REQUEST_METHOD'] == 'GET'):
         try:
             subscriptions = [hide_email(email) for email in get_subscriptions()]
-            start_response('200 OK', [('Content-Type','text/html')])
+            logger.debug('Get subscriptions: %s' % str(subscriptions))
+            send_response(start_response, 200)
             return [str(subscriptions)]
         except Exception as e:
-            start_response('200 OK', [('Content-Type','text/html')])
+            logger.error('Failed to get subscriptions: %s' % str(e))
+            send_response(start_response, 200)
             return [str(e)]
     elif (env['REQUEST_URI'] == '/api/1/subscribe' and env['REQUEST_METHOD'] == 'POST'):
         fields = request.parse_formvars(env)
@@ -24,18 +28,31 @@ def application(env, start_response):
             email = fields.get('mail')
         if (email and len(fields) == 1 and validate_email(email)):
             try:
+                logger.debug('Try to add email: %s' % email)
                 subscribe(email)
-                start_response('200 OK', [('Content-Type','text/html')])
+                logger.debug('Added successfully')
+                send_response(start_response, 200)
                 return ["%s subscribed!" % email]
             except Exception as e:
-                start_response('200 OK', [('Content-Type','text/html')])
+                logger.error('Failed: %s' % str(e))
+                send_response(start_response, 200)
                 return ["Unable to subscribe %s: %s" % (email, str(e))]
         else:
-            start_response('400 Bad Request', [('Content-Type','text/html')])
+            logger.warning('Bad post: %s' % str(fields))
+            send_response(start_response, 400)
             return ['Invalid parameters.']
     else:
-        start_response('400 Bad Request', [('Content-Type','text/html')])
+        logger.warning('Bad request: %s' % str(env))
+        send_response(start_response, 400)
         return ['Invalid request.']
+
+def send_response(response_func, code):
+    if (code == 200):
+        response_func('200 OK', [('Content-Type','text/html')])
+    elif (code == 400):
+        response_func('400 Bad Request', [('Content-Type','text/html')])
+    else:
+        logger.error('Invalid response code %s' % str(code))
 
 def hide_email(email):
     '''
@@ -50,9 +67,7 @@ def subscribe(email):
     #if cmd_subfolder not in sys.path:
     #    print 'Add %s to sys path' % cmd_subfolder
     #    sys.path.insert(0, cmd_subfolder)
-    from scripts import utils
     utils.add_recipient(email)
 
 def get_subscriptions():
-    from scripts import utils
     return utils.get_recipients()
