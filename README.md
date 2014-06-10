@@ -16,6 +16,7 @@ Convert feed to mobi and push to your email/kindle daily.
 - nginx
 - python-paste
 - uwsgi
+- simplejson
 - validate-email
 
 ##Usage

@@ -6,7 +6,6 @@
 window.addEventListener("load", function () {
   // We need to access the form element
   var form = document.getElementById("email-form");
-
   // to takeover its submit event.
   form.addEventListener("submit", function (event) {
     event.preventDefault();
@@ -32,14 +31,14 @@ window.addEventListener("load", function () {
     // We bind the FormData object and the form element
     var formData  = new FormData(form);
 
-    sendXHR("POST", "api/1/subscribe", formData, function() {
-      if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-        document.getElementById("result").innerHTML=xmlhttp.responseText;
-        setTimeout(getSubscriptions, 0);
-      }
-      else {
-        document.getElementById("result").innerHTML="Something went wrong:<br>"
-        document.getElementById("result").innerHTML+=xmlhttp.responseText;
+    sendXHR("POST", "api/1/subscriptions", formData, function() {
+      if (xmlhttp.readyState==4) {
+        var response = JSON.parse(xmlhttp.responseText);
+        document.getElementById("result").innerHTML = response.meta.msg;
+        if (response.meta.code == 200) {
+          document.getElementById("current").innerHTML = "";
+          appendSubscriptions(response.data.subscriptions);
+        }
       }
     });
   }
@@ -47,21 +46,39 @@ window.addEventListener("load", function () {
   function getSubscriptions()
   {
     sendXHR("GET", "api/1/subscriptions", null, function() {
-      if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-        document.getElementById("current").innerHTML = "Current subscriptions:<br>"
-        document.getElementById("current").innerHTML+=xmlhttp.responseText;
-      }
-      else {
-        document.getElementById("current").innerHTML="Unable to get subscriptions:<br>"
-        document.getElementById("current").innerHTML+=xmlhttp.responseText;
+      if (xmlhttp.readyState==4) {
+        var response = JSON.parse(xmlhttp.responseText);
+        if (response.meta.code == 200) {
+          document.getElementById("current").innerHTML = "";
+          appendSubscriptions(response.data.subscriptions);
+        }
+        else {
+          document.getElementById("current").innerHTML += response.meta.msg;
+        }
       }
     });
   }
 
+  function appendSubscriptions(subscriptions)
+  {
+    for (var i = 0; i < subscriptions.length; i++) {
+      document.getElementById("current").innerHTML += (subscriptions[i] + "<br>");
+    }
+  }
+
   getSubscriptions();
 });
-
 </script>
+
+<style>
+  #current {
+    padding-left: 20px;
+  }
+  #result {
+    padding-left: 50px;
+    font-weight: bold;
+  }
+</style>
 </head>
 <body>
 
@@ -73,8 +90,8 @@ window.addEventListener("load", function () {
 </form>
 <div id="result"></div>
 <hr>
+Current subscriptions:
 <div id="current">
-Current subscriptions:<br>
 </div>
 </body>
 </html>
