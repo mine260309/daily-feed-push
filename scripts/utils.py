@@ -1,16 +1,17 @@
-import os.path
+import os.path, inspect
 from datetime import datetime
 #from collections import OrderedDict
 
 MAX_RECIPIENTS = 10
 
 # Various helper functions
-CUR_DIR = os.path.dirname(os.path.realpath(__file__))
-CONFIG_DIR = '%s/../config/' % CUR_DIR
-MOBI_DIR = '%s/../mobi/' % CUR_DIR
+CUR_DIR = os.path.dirname(os.path.realpath(os.path.split(inspect.getfile(inspect.currentframe()))[0]))
+CONFIG_DIR = '%s/config/' % CUR_DIR
+MOBI_DIR = '%s/mobi/' % CUR_DIR
+SCRIPT_DIR = '%s/scripts/' % CUR_DIR
 RECIPE_FILE = CONFIG_DIR + 'recipes.txt'
 RECIPIENTS_FILE = CONFIG_DIR + 'recipients.txt'
-PROCESS_SCRIPT = CUR_DIR + '/process_recipe.sh'
+PROCESS_SCRIPT = SCRIPT_DIR + 'process_recipe.sh'
 
 
 def get_mailconfig():

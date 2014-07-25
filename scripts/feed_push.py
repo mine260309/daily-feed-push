@@ -5,6 +5,7 @@ import os.path
 
 import log
 import utils
+from datetime import date
 from sendmail import sendmail
 
 
@@ -35,15 +36,27 @@ if __name__ == '__main__':
 
     for recipe in recipes:
         try:
-            logger.info('Processing recipe %s' % recipe)
-            attachment = process_recipe(recipe)
-            logger.info('%s genereated successfully' % attachment)
-            name = os.path.basename(attachment)
-            if (utils.is_mobi_sent(attachment)):
-                logger.info('%s already sent' % name)
+            if 'weekly' in recipe and date.today().weekday() == 6:
+                should_process = True
+            elif 'daily' in recipe:
+                should_process = True
             else:
-                subject = 'Daily feed push: %s' % name
-                sendmail(recipients, subject, attachment)
-                utils.mark_mobi_sent(attachment)
+                should_process = False
+
+            if should_process:
+                logger.info('Processing recipe %s' % recipe)
+                attachment = process_recipe(recipe)
+                logger.info('%s genereated successfully' % attachment)
+                name = os.path.basename(attachment)
+                if (utils.is_mobi_sent(attachment)):
+                    logger.info('%s already sent' % name)
+                else:
+                    subject = 'Daily feed push: %s' % name
+                    sendmail(recipients, subject, attachment)
+                    utils.mark_mobi_sent(attachment)
+            else:
+                logger.info('Skip recipe %s' %recipe)
         except:
-            logger.error('Unexpected error: %s', str(sys.exc_info()))
+            #logger.error('Unexpected error: %s', str(sys.exc_info()))
+            import traceback
+            traceback.print_exc(file=sys.stdout)
