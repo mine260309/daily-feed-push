@@ -12,7 +12,7 @@ hide_email_regex = re.compile(r'(^.*?)(.{1,4})(@.*)')
 logger = log.setup_custom_logger('webapp')
 encoder = json.JSONEncoder()
 
-def application(env, start_response):
+def api_subscriptions(env, start_response):
     """
     A simple RESTful API: /subscriptions
     GET: return list of subscriptions
@@ -30,17 +30,8 @@ def application(env, start_response):
          }
       }
     """
-    #print env
     code = 400
     result = {}
-    if env['REQUEST_URI'] != '/api/1/subscriptions':
-        logger.warning('Bad request: %s' % str(env))
-        code = 400
-        result = construct_response(code, 'Invalid request', None)
-        send_response(start_response, code)
-        response = encoder.encode(result)
-        logger.debug('Encoded json: %s' % response)
-        return [response]
     if (env['REQUEST_METHOD'] == 'GET'):
         try:
             subscriptions = [hide_email(email) for email in get_subscriptions()]
@@ -94,6 +85,27 @@ def application(env, start_response):
     response = encoder.encode(result)
     logger.debug('Encoded json: %s' % response)
     return [response]
+
+apis = dict()
+apis['subscriptions'] = api_subscriptions
+
+def application(env, start_response):
+    request_uri = env['REQUEST_URI']
+    try:
+        api = request_uri[request_uri.rindex('/') + 1:]
+        if api in apis:
+            return apis[api](env, start_response)
+        else:
+            logger.warning('Bad request: %s' % str(env))
+            code = 400
+            result = construct_response(code, 'Invalid request', None)
+            send_response(start_response, code)
+            response = encoder.encode(result)
+            logger.debug('Encoded json: %s' % response)
+            return [response]
+    except Exception:
+        import traceback
+        traceback.print_exc()
 
 def construct_response(code, msg, subscriptions):
     result = {'meta': {}, 'data':{}}
